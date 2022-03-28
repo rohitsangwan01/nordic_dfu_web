@@ -1,0 +1,23 @@
+name: nordic_dfu_web_example
+publish_to: none
+description: Demonstrates how to use the nordic_dfu_web plugin.
+environment:
+  sdk: ">=2.16.1 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  get: 4.6.1
+  flutter_web_bluetooth: ^0.0.7
+  file_picker: ^4.5.1
+  nordic_dfu_web:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^1.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
