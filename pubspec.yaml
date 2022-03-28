@@ -1,5 +1,5 @@
 name: nordic_dfu_web
-description: A new flutter plugin project.
+description: Flutter Plugin to Update Device Firmware (DFU) of your nrf51 or nrf52 chip from Nordic Semiconductor
 version: 0.0.1
 homepage: https://github.com/rohitsangwan01/nordic_dfu_web.git
 repository: https://github.com/rohitsangwan01/nordic_dfu_web.git
