@@ -42,12 +42,14 @@ class HomeController extends GetxController {
       final characteristic = chars.firstWhere(
           (element) => element.uuid == '8ec90003-f315-4f60-9fb8-838830daea50');
       late StreamSubscription charStream;
+
       charStream = characteristic.value.listen((event) async {
         print('recieved Event $event');
         charStream.cancel();
         print('Stopping Notifcaiton');
         characteristic.stopNotifications();
       });
+      
       print('starting Notification');
       await characteristic.startNotifications();
       print('Writing Data');

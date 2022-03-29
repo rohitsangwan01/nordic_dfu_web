@@ -7109,6 +7109,7 @@ var CRC32;
         var maxSize = response.getUint32(0, LITTLE_ENDIAN);
         var offset = response.getUint32(4, LITTLE_ENDIAN);
         var crc = response.getInt32(8, LITTLE_ENDIAN);
+        
         if (
           type === "init" &&
           offset === buffer.byteLength &&
@@ -7122,6 +7123,7 @@ var CRC32;
             object: type,
             totalBytes: buffer.byteLength,
             currentBytes: bytes,
+            
           });
         };
         _this.progress(0);
