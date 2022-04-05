@@ -1,5 +1,106 @@
+// Load a firmware package
+async function setFileFromByteArray(bytes, fileName, type, onError) {
+  if (!type) {
+    type = "application/octet-stream";
+  }
+  try {
+    const blob = new Blob([bytes], { type: type });
+    let file = new File([blob], fileName, { type: type });
+    package = new SecureDfuPackage(file);
+    let myPromise = new Promise(function (myResolve, myReject) {
+      package
+        .load()
+        .then(() => {
+          // setStatus(`Firmware package: ${file.name}`);
+          myResolve(package);
+        })
+        .catch((error) => {
+          onError(error);
+          myReject(error);
+        });
+    });
+    return myPromise;
+  } catch (err) {
+    onError(err);
+  }
+}
+
+///get dfu object from secure-dfu
+function getDfu(dfuDelay, onLog, onProgress) {
+  let myPromise = new Promise(function (myResolve, myReject) {
+    const dfu = new SecureDfu(CRC32.buf, dfuDelay);
+
+    dfu.addEventListener("log", (event) => {
+      //  setStatus(event.message);
+      onLog(event.message);
+    });
+    dfu.addEventListener("progress", (state) => {
+      // setTransfer(state);
+      var progress = (state.currentBytes / state.totalBytes) * 100;
+      onProgress(progress);
+    });
+
+    myResolve(dfu);
+  });
+  return myPromise;
+}
+
+// reset dfu events later
+function resetDfuEvents(dfu) {
+  dfu.removeEventListener("log");
+  dfu.removeEventListener("progress");
+}
+
+// Choose a device
+async function selectDevice(dfu, pkg) {
+  // setStatus("Selecting device...");
+  let myPromise = new Promise(function (myResolve, myReject) {
+    dfu
+      .requestDevice(true)
+      .then((device) => {
+        if (!device) {
+          // setStatus("DFU mode set, select device again");
+          myResolve(null);
+        } else {
+          myResolve(device);
+          // update(dfu, device, pkg);
+        }
+      })
+      .catch((error) => {
+        //onDfuError(error);
+        myReject(error);
+      });
+  });
+  return myPromise;
+}
+
+// Update a device with all firmware from a package
+function update(dfu, device, pkg, onError, onComplete, onLogs) {
+  Promise.resolve()
+    .then(() => pkg.getBaseImage())
+    .then((image) => {
+      if (image) {
+        onLogs(`Updating ${image.type}: ${image.imageFile}...`);
+        return dfu.update(device, image.initData, image.imageData);
+      }
+    })
+    .then(() => pkg.getAppImage())
+    .then((image) => {
+      if (image) {
+        onLogs(`Updating ${image.type}: ${image.imageFile}...`);
+        return dfu.update(device, image.initData, image.imageData);
+      }
+    })
+    .then(() => {
+      onComplete("Dfu Completed");
+    })
+    .catch((error) => {
+      onError(error);
+    });
+}
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Merging js:jszip && crc32 begins */
+/* Other Js Scripts Used in This File
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 //jszip
@@ -6698,10 +6799,7 @@ var CRC32;
   (r.table = f), (r.bstr = n), (r.buf = e), (r.str = o);
 });
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Merging js: package.js begins */
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+//package.js
 (function (root, factory) {
   if (typeof define === "function" && define.amd) {
     // AMD. Register as an anonymous module.
@@ -6777,10 +6875,7 @@ var CRC32;
   return Package;
 });
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Merging js: secure-dfu.js begins */
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+//secure-dfu.js
 (function (root, factory) {
   if (typeof define === "function" && define.amd) {
     // AMD. Register as an anonymous module.
@@ -7329,209 +7424,3 @@ var CRC32;
   })();
   return SecureDfu;
 });
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Merging js:Main  begins */
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-///Main File From Here
-function sendEvent(type, data) {
-  window.parent.postMessage({ type: type, data: data }, "*");
-}
-
-function setTransfer(state) {
-  if (!state) return;
-  var progress = (state.currentBytes / state.totalBytes) * 100;
-  var progressTxt = `${state.currentBytes}/${state.totalBytes} ${state.object} bytes written`;
-  sendEvent("dfuProgress", progress);
-}
-
-function onDfuProgress(state) {
-  if (!state) return;
-  var progress = (state.currentBytes / state.totalBytes) * 100;
-  var progressTxt = `${state.currentBytes}/${state.totalBytes} ${state.object} bytes written`;
-  sendEvent("dfuProgress", progress);
-}
-
-function onDfuComplete(data) {
-  sendEvent("dfuComplete", data);
-}
-
-function onDfuError(err) {
-  sendEvent("dfuError", err);
-}
-
-function setStatus(data) {
-  sendEvent("logs", data);
-}
-
-// Load a firmware package
-async function setFileFromByteArray(bytes, fileName, type) {
-  if (!type) {
-    type = "application/octet-stream";
-  }
-  try {
-    const blob = new Blob([bytes], { type: type });
-    let file = new File([blob], fileName, { type: type });
-    package = new SecureDfuPackage(file);
-    let myPromise = new Promise(function (myResolve, myReject) {
-      package
-        .load()
-        .then(() => {
-          setStatus(`Firmware package: ${file.name}`);
-
-          myResolve(package);
-        })
-        .catch((error) => {
-          onDfuError(error);
-          myReject(error);
-        });
-    });
-    return myPromise;
-  } catch (err) {
-    onDfuError(err);
-  }
-}
-
-function getDfu(dfuDelay) {
-  let myPromise = new Promise(function (myResolve, myReject) {
-    const dfu = new SecureDfu(CRC32.buf, dfuDelay);
-
-    dfu.addEventListener("log", (event) => {
-      setStatus(event.message);
-    });
-    dfu.addEventListener("progress", (event) => {
-      setTransfer(event);
-    });
-
-    myResolve(dfu);
-  });
-  return myPromise;
-}
-
-// Choose a device
-async function selectDevice(dfu, pkg, dfuDelay) {
-  setStatus("Selecting device...");
-  let myPromise = new Promise(function (myResolve, myReject) {
-    dfu
-      .requestDevice(true)
-      .then((device) => {
-        if (!device) {
-          setStatus("DFU mode set, select device again");
-          myResolve(false);
-        } else {
-          myResolve(true);
-          update(dfu, device, pkg);
-        }
-      })
-      .catch((error) => {
-        onDfuError(error);
-        myReject(error);
-      });
-  });
-  return myPromise;
-}
-
-// Update a device with all firmware from a package
-function update(dfu, device, pkg) {
-  Promise.resolve()
-    .then(() => pkg.getBaseImage())
-    .then((image) => {
-      if (image) {
-        setStatus(`Updating ${image.type}: ${image.imageFile}...`);
-        return dfu.update(device, image.initData, image.imageData);
-      }
-    })
-    .then(() => pkg.getAppImage())
-    .then((image) => {
-      if (image) {
-        setStatus(`Updating ${image.type}: ${image.imageFile}...`);
-        return dfu.update(device, image.initData, image.imageData);
-      }
-    })
-    .then(() => {
-      setStatus("Update complete!");
-      setTransfer();
-      onDfuComplete("Dfu Completed");
-    })
-    .catch((error) => {
-      onDfuError(error);
-    });
-}
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Merging js:Main  UnUsedbegins */
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-///Unused Functions
-function typeOf(obj) {
-  return {}.toString.call(obj).split(" ")[1].slice(0, -1).toLowerCase();
-}
-
-function setPackage(file) {
-  if (!file) return;
-  package = new SecureDfuPackage(file);
-  let myPromise = new Promise(function (myResolve, myReject) {
-    package
-      .load()
-      .then(() => {
-        setStatus(`Firmware package: ${file.name}`);
-
-        myResolve("Done");
-      })
-      .catch((error) => {
-        onDfuError(error);
-        package = null;
-        myReject(error);
-      });
-  });
-  return myPromise;
-}
-function fileDownloadProgress({ loaded, total }) {
-  var progress = (loaded / total) * 100;
-  sendEvent("downloadProgress", progress);
-}
-
-async function getFileFromUrl(
-  url,
-  name,
-  defaultType = "application/octet-stream"
-) {
-  console.log("downloading with fetch()...");
-  const response = await fetch(url);
-  const contentLength = response.headers.get("content-length");
-  const total = parseInt(contentLength, 10);
-  let loaded = 0;
-  const res = new Response(
-    new ReadableStream({
-      async start(controller) {
-        const reader = response.body.getReader();
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          loaded += value.byteLength;
-          fileDownloadProgress({ loaded, total });
-          controller.enqueue(value);
-        }
-        controller.close();
-      },
-    })
-  );
-  const data = await res.blob();
-
-  let file = new File([data], name, {
-    type: data.type || defaultType,
-  });
-  setPackage(file);
-  return file;
-}
-
-function getFile() {
-  var input = document.createElement("input");
-  input.type = "file";
-  input.onchange = (e) => {
-    var file = e.target.files[0];
-    setPackage(file);
-  };
-  input.click();
-}

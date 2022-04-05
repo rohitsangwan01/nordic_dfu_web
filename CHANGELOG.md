@@ -1,3 +1,9 @@
+
+## 0.0.3
+
+- added proper js interops
+
+
 ## 0.0.2
 
 - fixed import for non web platforms

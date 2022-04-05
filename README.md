@@ -7,13 +7,16 @@ This library allows you to do a Device Firmware Update (DFU) of your nrf51 or nr
 add this package to pubspec.yaml file
 
 ```dart
-nordic_dfu_web: 0.0.2
+nordic_dfu_web: 0.0.3
 ```
 
-add this script tag in web/index.html file inside of head tag
+add this script tag in web/index.html file inside of head tag (check [example](https://github.com/rohitsangwan01/nordic_dfu_web/tree/main/example) folder)
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/rohitsangwan01/nordic_dfu_web/ble.js" defer></script> 
+<script
+  src="https://cdn.jsdelivr.net/gh/rohitsangwan01/nordic_dfu_web/ble.js"
+  defer
+></script>
 ```
 
 ## Features
@@ -23,50 +26,35 @@ pass that buffer to this method and start DFU
 
 Note: startDfu will open dialog to choose for a Device
 if , that device is already in Dfu mode , then it will start transfeing firmware
-else ,first device will be booted to Dfu and onDfuModeAvailable callback will be called , here ask user to
-scan for device again by using any dialog or someting
+else ,first device will be booted to Dfu and and it will throw an error,
+and increase dfuDelay if getting any issue while transfering
 
 ```dart
-  NordicDfuWeb nordicDfuWeb = NordicDfuWeb();
-
-
-  startDfu() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      PlatformFile file = result.files.first;
-      await nordicDfuWeb.startDfu(
-          uint8list: file.bytes!,
-          onProgress: (data) {
-            print(data);
-          },
-          onComplete: (data) {
-            print(data);
-          },
-          onError: (err) {
-           print(err);
-          },
-          onLogs: (data) {
-            print(data);
-          },
-          onDfuModeAvailable: (package) {
-              ///Show Dialog to The User to choose Dfu Device Again
-            Get.defaultDialog(
-                title: '',
-                content: const Text('Device Booted to DFU Mode , Select Again'),
-                onConfirm: () {
-                  Get.back();
-                  nordicDfuWeb.scanDevice(pkg: package);
-                });
-          });
-    }
-  }
+    await NordicDfuWeb.startDfu(
+      uint8list: bytes,
+      dfuDelay: 25,
+      onProgress: (progress) {
+        print(progress);
+      },
+      onComplete: (data) {
+       print(data);
+      },
+      onError: (err) {
+       print(err);
+      },
+      onLogs: (logs) {
+        print(logs);
+      },
+    );
 ```
 
-TODO : Add Features Description
+## TODO
+
+Host example
 
 ## Usage
 
-Added longer examples to `/example` folder.
+Added longer examples to [/example](https://github.com/rohitsangwan01/nordic_dfu_web/tree/main/example) folder.
 
 ## Resources
 

@@ -8,9 +8,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  get: 4.6.1
   flutter_web_bluetooth: ^0.0.7
   file_picker: ^4.5.1
+  js: ^0.6.3
   nordic_dfu_web:
     path: ../
 
@@ -21,3 +21,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/

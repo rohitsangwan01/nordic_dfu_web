@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-
-import 'package:get/get.dart';
-
-import 'app/routes/app_pages.dart';
+import 'package:nordic_dfu_web_example/home.dart';
 
 void main() {
   runApp(
-    GetMaterialApp(
+    const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "Application",
-      initialRoute: AppPages.INITIAL,
-      getPages: AppPages.routes,
+      title: "Nordic Dfu",
+      home: Home(),
     ),
   );
 }
