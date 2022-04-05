@@ -14,7 +14,7 @@ add this script tag in web/index.html file inside of head tag (check [example](h
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/gh/rohitsangwan01/nordic_dfu_web/ble.js"
+  src="https://cdn.jsdelivr.net/gh/rohitsangwan01/nordic_dfu_web@latest/ble.js"
   defer
 ></script>
 ```
