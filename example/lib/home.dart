@@ -55,7 +55,7 @@ class _HomeState extends State<Home> {
 
       //start a Stream
       charStream = characteristic.value.listen((event) async {
-        print('recieved Event for Dfu mode ${event.buffer.asUint8List()}');
+        print('received Event for Dfu mode ${event.buffer.asUint8List()}');
         charStream.cancel();
         characteristic.stopNotifications();
 
@@ -64,7 +64,7 @@ class _HomeState extends State<Home> {
           showConnectDevice = false;
         });
 
-        ///here on Successfull Dfu Boot , start Dfu Process
+        ///here on Successfully Dfu Boot , start Dfu Process
       });
       await characteristic.startNotifications();
       var writeData = Uint8List.fromList([01]);
@@ -83,6 +83,7 @@ class _HomeState extends State<Home> {
     await NordicDfuWeb.startDfu(
       uint8list: file!,
       dfuDelay: 25,
+      requestBuilderFilters: [],
       onProgress: (data) {
         int progressData = double.parse(data).toInt();
         double percentage = (progressData / 100);
@@ -109,6 +110,7 @@ class _HomeState extends State<Home> {
         setState(() {
           logs = data;
         });
+        print(data.toString());
       },
     );
   }
