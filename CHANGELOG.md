@@ -1,10 +1,17 @@
+## 0.0.5
+
+- added option to pass custom dfu service uuid
+- added option to pass requestBuilderFilters
+- updated js script
+- few minor bug fixes
+
 ## 0.0.4
 
 - updated js script
 
 ## 0.0.3
 
-- added proper js interops
+- added proper js interop
 
 ## 0.0.2
 

@@ -7,7 +7,7 @@ This library allows you to do a Device Firmware Update (DFU) of your nrf51 or nr
 add this package to pubspec.yaml file
 
 ```dart
-nordic_dfu_web: 0.0.3
+nordic_dfu_web: 0.0.5
 ```
 
 add this script tag in web/index.html file inside of head tag (check [example](https://github.com/rohitsangwan01/nordic_dfu_web/tree/main/example) folder)
@@ -25,13 +25,16 @@ To Start Dfu Pic a file by using any File Picker Plugin and convert File to buff
 pass that buffer to this method and start DFU
 
 Note: startDfu will open dialog to choose for a Device
-if , that device is already in Dfu mode , then it will start transfeing firmware
+if , that device is already in Dfu mode , then it will start transferring firmware
 else ,first device will be booted to Dfu and and it will throw an error,
-and increase dfuDelay if getting any issue while transfering
+and increase dfuDelay if getting any issue while transferring
+to add filters , pass a list of requestBuilderFilter object
+if passed an empty list , all devices will be shown in request builder
 
 ```dart
     await NordicDfuWeb.startDfu(
       uint8list: bytes,
+      requestBuilderFilters: [],
       dfuDelay: 25,
       onProgress: (progress) {
         print(progress);

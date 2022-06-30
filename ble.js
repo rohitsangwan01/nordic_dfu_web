@@ -26,12 +26,32 @@ async function setFileFromByteArray(bytes, fileName, type, onError) {
 }
 
 ///get dfu object from secure-dfu
-function getDfu(dfuDelay, onLog, onProgress) {
+function getDfu(
+  dfuDelay,
+  onLog,
+  onProgress,
+  serviceUuid,
+  controlUuid,
+  packetUuid,
+  buttonUuid
+) {
   let myPromise = new Promise(function (myResolve, myReject) {
     const dfu = new SecureDfu(CRC32.buf, dfuDelay);
 
+    if (serviceUuid) {
+      dfu.SERVICE_UUID = serviceUuid;
+    }
+    if (controlUuid) {
+      dfu.CONTROL_UUID = controlUuid;
+    }
+    if (packetUuid) {
+      dfu.PACKET_UUID = packetUuid;
+    }
+    if (buttonUuid) {
+      dfu.BUTTON_UUID = buttonUuid;
+    }
+
     dfu.addEventListener("log", (event) => {
-      //  setStatus(event.message);
       onLog(event.message);
     });
     dfu.addEventListener("progress", (state) => {
@@ -51,24 +71,43 @@ function resetDfuEvents(dfu) {
   dfu.removeEventListener("progress");
 }
 
+///get filterObject for RequestBuilder
+function getRequestFilter(servicesList, namePrefix) {
+  if (servicesList && namePrefix) {
+    return {
+      services: servicesList,
+      namePrefix: namePrefix,
+    };
+  }
+  if (servicesList) {
+    return {
+      services: servicesList,
+    };
+  }
+
+  if (namePrefix) {
+    return {
+      namePrefix: namePrefix,
+    };
+  }
+  return null;
+}
+
 // Choose a device
-async function selectDevice(dfu, pkg) {
+async function selectDevice(dfu, pkg, filters) {
   // setStatus("Selecting device...");
   let myPromise = new Promise(function (myResolve, myReject) {
     dfu
-      .requestDevice(true)
+      .requestDevice(true, filters)
       .then((device) => {
         if (!device) {
-          // setStatus("DFU mode set, select device again");
           myResolve(null);
         } else {
           myResolve(device);
-          // update(dfu, device, pkg);
         }
       })
       .catch((error) => {
-        //onDfuError(error);
-        myReject(error);
+        myReject("Got Error While Requesting Device: " + error.toString());
       });
   });
   return myPromise;
@@ -101,7 +140,7 @@ function update(dfu, device, pkg, onError, onComplete, onLogs) {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Other Js Scripts Used in This File
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 //jszip
 !(function (a) {
@@ -6918,6 +6957,11 @@ var CRC32;
   var CONTROL_UUID = "8ec90001-f315-4f60-9fb8-838830daea50";
   var PACKET_UUID = "8ec90002-f315-4f60-9fb8-838830daea50";
   var BUTTON_UUID = "8ec90003-f315-4f60-9fb8-838830daea50";
+
+  // var CONTROL_UUID = "8EC90001-F315-4F60-9FB8-838830DAEA50";
+  // var PACKET_UUID = "8EC90002-F315-4F60-9FB8-838830DAEA50";
+  // var BUTTON_UUID = "8EC90003-f315-4f60-9fb8-838830daea50";
+
   var LITTLE_ENDIAN = true;
   var PACKET_SIZE = 20;
 
@@ -7075,13 +7119,13 @@ var CRC32;
         .then(function (characteristics) {
           _this.log("found " + characteristics.length + " characteristic(s)");
           _this.packetChar = characteristics.find(function (characteristic) {
-            return characteristic.uuid === PACKET_UUID;
+            return characteristic.uuid === _this.PACKET_UUID;
           });
           if (!_this.packetChar)
             throw new Error("Unable to find packet characteristic");
           _this.log("found packet characteristic");
           _this.controlChar = characteristics.find(function (characteristic) {
-            return characteristic.uuid === CONTROL_UUID;
+            return characteristic.uuid === _this.CONTROL_UUID;
           });
           if (!_this.controlChar)
             throw new Error("Unable to find control characteristic");
@@ -7115,7 +7159,7 @@ var CRC32;
         .then(function (server) {
           _this.log("connected to gatt server");
           return server
-            .getPrimaryService(SecureDfu.SERVICE_UUID)
+            .getPrimaryService(_this.SERVICE_UUID)
             .catch(function () {
               throw new Error("Unable to find DFU service");
             });
@@ -7297,14 +7341,22 @@ var CRC32;
 
     SecureDfu.prototype.requestDevice = function (buttonLess, filters) {
       var _this = this;
+
       if (!buttonLess && !filters) {
-        filters = [{ services: [SecureDfu.SERVICE_UUID] }];
+        filters = [{ services: [this.SERVICE_UUID] }];
       }
+      //filters = [{ services: [this.SERVICE_UUID] }];
+
       var options = {
-        optionalServices: [SecureDfu.SERVICE_UUID],
+        optionalServices: [this.SERVICE_UUID],
       };
-      if (filters) options.filters = filters;
-      else options.acceptAllDevices = true;
+      if (filters) {
+        options.filters = filters;
+        _this.log("Added Filter for Dfu service in Request Builder");
+      } else {
+        options.acceptAllDevices = true;
+        _this.log("Request Builder Will Scan All Devices");
+      }
       return this.bluetooth.requestDevice(options).then(function (device) {
         if (buttonLess) {
           return _this.setDfuMode(device);
@@ -7323,16 +7375,16 @@ var CRC32;
       return this.gattConnect(device).then(function (characteristics) {
         _this.log("found " + characteristics.length + " characteristic(s)");
         var controlChar = characteristics.find(function (characteristic) {
-          return characteristic.uuid === CONTROL_UUID;
+          return characteristic.uuid === _this.CONTROL_UUID;
         });
         var packetChar = characteristics.find(function (characteristic) {
-          return characteristic.uuid === PACKET_UUID;
+          return characteristic.uuid === _this.PACKET_UUID;
         });
         if (controlChar && packetChar) {
           return device;
         }
         var buttonChar = characteristics.find(function (characteristic) {
-          return characteristic.uuid === BUTTON_UUID;
+          return characteristic.uuid === _this.BUTTON_UUID;
         });
         if (!buttonChar) {
           throw new Error("Unsupported device");
