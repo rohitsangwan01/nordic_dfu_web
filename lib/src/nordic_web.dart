@@ -15,6 +15,7 @@ class NordicDfuWeb {
   /// change `dfuDelay` to speed up update process , but less delay might result in crash
   /// don't change  `dfuServiceUuid` or other Uuid's unless you are sure your device requires different data
   /// get progress from  `OnProgress` callback
+  /// To Filter only DFu devices , pass `RequestBuilderFilter` like this : `[RequestBuilderFilter(servicesList: [0xfe59])]`
   static Future startDfu({
     required Uint8List uint8list,
     int dfuDelay = 20,

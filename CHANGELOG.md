@@ -1,3 +1,7 @@
+## 0.0.6
+
+- Added javascript file in assets
+
 ## 0.0.5
 
 - added option to pass custom dfu service uuid

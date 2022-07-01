@@ -7,16 +7,13 @@ This library allows you to do a Device Firmware Update (DFU) of your nrf51 or nr
 add this package to pubspec.yaml file
 
 ```dart
-nordic_dfu_web: 0.0.5
+nordic_dfu_web: 0.0.6
 ```
 
-add this script tag in web/index.html file inside of head tag (check [example](https://github.com/rohitsangwan01/nordic_dfu_web/tree/main/example) folder)
+add this script tag in web/index.html file inside of head tag (check [example](https://github.com/rohitsangwan01/nordic_dfu_web/blob/main/example/web/index.html#L35) folder)
 
 ```html
-<script
-  src="https://cdn.jsdelivr.net/gh/rohitsangwan01/nordic_dfu_web@latest/ble.js"
-  defer
-></script>
+<script src="./assets/packages/nordic_dfu_web/assets/ble.js" defer></script>
 ```
 
 ## Features

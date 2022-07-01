@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import '../models/request_builder_filter.dart';
 
 class NordicDfuWeb {
+
+  /// This will be called in Non Web environment
   static Future startDfu({
     required Uint8List uint8list,
     int dfuDelay = 15,
