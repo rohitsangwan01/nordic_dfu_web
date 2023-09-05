@@ -18,14 +18,14 @@ add this script tag in web/index.html file inside of head tag (check [example](h
 
 ## Features
 
-To Start Dfu Pic a file by using any File Picker Plugin and convert File to buffer
+To Start Dfu Pick a file by using any File Picker Plugin and convert File to buffer,
 pass that buffer to this method and start DFU
 
 Note: startDfu will open dialog to choose for a Device
 if , that device is already in Dfu mode , then it will start transferring firmware
-else ,first device will be booted to Dfu and and it will throw an error,
-and increase dfuDelay if getting any issue while transferring
-to add filters , pass a list of requestBuilderFilter object
+else ,device will be booted to Dfu and and it will throw an error,
+Also try to increase dfuDelay if getting any issue while transferring, 
+to add filters, pass a list of requestBuilderFilter object, 
 if passed an empty list , all devices will be shown in request builder
 
 ```dart
