@@ -18,7 +18,7 @@ add this script tag in web/index.html file inside of head tag (check [example](h
 
 ## Features
 
-To Start Dfu Pick a file by using any File Picker Plugin and convert File to buffer,
+To Start Dfu, Pick a file by using any File Picker Plugin and convert File to buffer,
 pass that buffer to this method and start DFU
 
 Note: startDfu will open dialog to choose for a Device
